@@ -8,22 +8,21 @@ import view.graphic.component.Socket;
 import view.graphic.GraphicObject;
 
 
-public class ResistanceHoles implements GraphicObject{
-    private Socket socket1, socket2;
-    private Point position; 
-    private Color color = Color.DARK_GRAY;
-    private ArrayList<Socket> sockets;
-    private String name = "Điện trở";
+public class WireTube implements GraphicObject{
+    protected Socket socket1, socket2;
+    protected Point position; 
+    protected Color color = Color.DARK_GRAY;
+    protected ArrayList<Socket> sockets;
+    protected String name = "Ống dây";
     
     //  metric
-    private final int socketDistance = 80;
-    private final int width = 160;
-    private final int height = 80; 
+    protected final int width = 1000;
+    protected final int height = 30; 
 
-    public ResistanceHoles(Point position) {
+    public WireTube(Point position) {
         this.position = position;
-        socket1 = Socket.getCathode(new Point(position.x - socketDistance / 2, position.y));
-        socket2 = Socket.getCathode(new Point(position.x + socketDistance / 2, position.y));
+        socket1 = Socket.getAnode(new Point(position.x - width / 2 + 15, position.y));
+        socket2 = Socket.getCathode(new Point(position.x + width / 2 - 15, position.y));
         
         sockets = new ArrayList<>();
         sockets.add(socket1);
@@ -53,8 +52,8 @@ public class ResistanceHoles implements GraphicObject{
     @Override
     public void setPosition(Point worldPoint) {
         position = worldPoint;
-        socket1.setPosition(new Point(position.x - socketDistance / 2, position.y));
-        socket2.setPosition(new Point(position.x + socketDistance / 2, position.y));
+        socket1.setPosition(new Point(position.x - width / 2 + 15, position.y));
+        socket2.setPosition(new Point(position.x + width / 2 - 15, position.y));
     }
 
     @Override

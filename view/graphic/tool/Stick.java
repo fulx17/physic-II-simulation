@@ -1,46 +1,36 @@
 package view.graphic.tool;
-
-import java.awt.*;
 import java.util.ArrayList;
-
-import view.graphic.component.Socket;
-
 import view.graphic.GraphicObject;
+import java.awt.*;
+import view.graphic.component.Socket;
+public class Stick implements GraphicObject{
 
-
-public class ResistanceHoles implements GraphicObject{
-    private Socket socket1, socket2;
-    private Point position; 
-    private Color color = Color.DARK_GRAY;
+    private Point position;
+    private int width = 30;
+    private int height = 150;
+    private String name = "Thanh nối đất";
+    private Color color = new Color(197, 192, 192);
+    private Socket socket;
     private ArrayList<Socket> sockets;
-    private String name = "Điện trở";
-    
-    //  metric
-    private final int socketDistance = 80;
-    private final int width = 160;
-    private final int height = 80; 
 
-    public ResistanceHoles(Point position) {
+    public Stick(Point position) {
         this.position = position;
-        socket1 = Socket.getCathode(new Point(position.x - socketDistance / 2, position.y));
-        socket2 = Socket.getCathode(new Point(position.x + socketDistance / 2, position.y));
-        
+        socket = Socket.getCathode(new Point(position.x, position.y - 60));
+
         sockets = new ArrayList<>();
-        sockets.add(socket1);
-        sockets.add(socket2);
+        sockets.add(socket);
     }
 
     @Override
     public void draw(Graphics2D g) {
         int topLeftX = position.x - (width / 2);
         int topLeftY = position.y - (height / 2);
-
         g.setColor(color);
         g.fillRect(topLeftX, topLeftY, width, height);
 
-        socket1.draw(g);
-        socket2.draw(g);
+        socket.draw(g);
     }
+    
     @Override
     public boolean contains(Point worldPoint) {
         int left = position.x - width / 2;
@@ -49,14 +39,13 @@ public class ResistanceHoles implements GraphicObject{
         int bottom = position.y + height / 2;
         return (worldPoint.x >= left && worldPoint.x <= right) && (worldPoint.y >= top  && worldPoint.y <= bottom);
     }
-
+   
     @Override
     public void setPosition(Point worldPoint) {
         position = worldPoint;
-        socket1.setPosition(new Point(position.x - socketDistance / 2, position.y));
-        socket2.setPosition(new Point(position.x + socketDistance / 2, position.y));
+        socket.setPosition(new Point(position.x, position.y - 60));
     }
-
+    
     @Override
     public Point getPosition() {
         return position;
@@ -66,7 +55,7 @@ public class ResistanceHoles implements GraphicObject{
     public ArrayList<Socket> getSockets() {
         return sockets;
     }
-
+    
     @Override
     public String getName() {
         return name;

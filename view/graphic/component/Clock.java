@@ -1,33 +1,34 @@
 package view.graphic.component;
-
-import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
 
 import view.graphic.GraphicObject;
+import java.awt.*;
+public class Clock implements GraphicObject{
 
-public class JackLeg implements GraphicObject {
     private Point position;
-    private int width;
-    private int height;
-    private Color color = Color.LIGHT_GRAY;
-    private String name = "Chân";
-    
-    public JackLeg(Point position, int width, int height) {
+    private String name = "Đồng hồ";
+    private int width = 120;
+    private int height = 80; 
+    private int gap = 10;
+    public Clock(Point position) {
         this.position = position;
-        this.width = width;
-        this.height = height;
-    } 
+    }
 
     @Override
     public void draw(Graphics2D g) {
+        g.setColor(Color.BLACK);
         int topLeftX = position.x - (width / 2);
         int topLeftY = position.y - (height / 2);
-
-        g.setColor(color);
         g.fillRect(topLeftX, topLeftY, width, height);
 
-    }
+        g.setColor(Color.WHITE);
+        int innerTopLeftX = position.x - (width / 2) + gap;
+        int innerTopLeftY = position.y - (height / 2) + gap;
+        g.fillRect(innerTopLeftX, innerTopLeftY, width - 2 * gap, height - 2 * gap);
+        
 
+    }
+    
     @Override
     public boolean contains(Point worldPoint) {
         int left = position.x - width / 2;
@@ -35,14 +36,13 @@ public class JackLeg implements GraphicObject {
         int top = position.y - height / 2;
         int bottom = position.y + height / 2;
         return (worldPoint.x >= left && worldPoint.x <= right) && (worldPoint.y >= top  && worldPoint.y <= bottom);
-    
     }
-
+   
     @Override
     public void setPosition(Point worldPoint) {
         position = worldPoint;
     }
-
+    
     @Override
     public Point getPosition() {
         return position;
@@ -52,6 +52,7 @@ public class JackLeg implements GraphicObject {
     public ArrayList<Socket> getSockets() {
         return new ArrayList<>();
     }
+    
     @Override
     public String getName() {
         return name;

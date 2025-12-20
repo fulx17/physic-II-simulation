@@ -3,10 +3,10 @@ package controller;
 import java.awt.BorderLayout;
 import java.awt.Point;
 import java.util.*;
-import java.awt.FlowLayout;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import java.awt.GridLayout;
 
 import view.experiment.base.BaseExperimentPanel;
 import model.experiment.base.BaseExperimentModel;
@@ -85,6 +85,10 @@ public class ExperimentController {
         displayHint(correct, true);
     }
 
+    public void unSetDelete() {
+        expPanel.getFooter().getDelWireBtn().setBackground(null);
+    }
+
     public void addVersionChecker() {
         if(model.getVersionNumber() == 1) {
             JButton checkBtnVer1 = new JButton("Kiểm tra");
@@ -92,11 +96,11 @@ public class ExperimentController {
                 baseAdjacent = model.getBaseAdjacentVer1();
                 checking();
             });  
-            expPanel.footer.add(checkBtnVer1, BorderLayout.CENTER);
+            expPanel.getFooter().add(checkBtnVer1, BorderLayout.CENTER);
         }
         else {
             JPanel buttonPanel = new JPanel();
-            buttonPanel.setLayout(new FlowLayout());
+            buttonPanel.setLayout(new GridLayout(1, 2, 0, 0));
             JButton checkBtnVer1 = new JButton("Kiểm tra 1");
             checkBtnVer1.addActionListener(e -> {
                 baseAdjacent = model.getBaseAdjacentVer1();
@@ -109,7 +113,7 @@ public class ExperimentController {
             }); 
             buttonPanel.add(checkBtnVer1);
             buttonPanel.add(checkBtnVer2);
-            expPanel.footer.add(buttonPanel, BorderLayout.CENTER);
+            expPanel.getFooter().add(buttonPanel, BorderLayout.CENTER);
         }
     }
 }

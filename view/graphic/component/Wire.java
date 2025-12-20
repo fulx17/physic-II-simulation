@@ -2,16 +2,19 @@ package view.graphic.component;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.util.ArrayList;
+
 import view.graphic.GraphicObject;
 
 public class Wire implements GraphicObject{
 
-    private Jack jack1;
-    private Jack jack2;
-    private Point position;
-    private static int index = 0;
-    private Color[] colorList = {Color.BLUE, Color.RED, Color.YELLOW};
-    private Color color;
+    protected Jack jack1;
+    protected Jack jack2;
+    protected Point position;
+    protected static int index = 0;
+    protected Color[] colorList = {Color.BLUE, Color.RED, Color.YELLOW, Color.BLACK};
+    protected Color color;
+    protected String name = "Dây cắm";
 
     public Wire(Point position) {
         this.position = position;
@@ -56,6 +59,8 @@ public class Wire implements GraphicObject{
         return null;
     }
 
+
+    @Override
     public boolean contains(Point worldPoint) {
 
         double x1 = jack1.getPosition().x;
@@ -71,7 +76,9 @@ public class Wire implements GraphicObject{
         return jack1.contains(worldPoint) || jack2.contains(worldPoint) || distance <= tolerance;
     }
 
+    @Override
     public void draw(Graphics2D g) {
+        g.setColor(color);
         g.drawLine(
             jack1.getPosition().x,
             jack1.getPosition().y - 14,
@@ -81,10 +88,15 @@ public class Wire implements GraphicObject{
         jack1.draw(g);
         jack2.draw(g);
     }
+
+    @Override
     public Point getPosition() {
         return position;
     }
+
+    @Override
     public void setPosition(Point worldPoint) {
+        if(isPlugged()) return;
         Point p1 = jack1.getPosition();
         jack1.setPosition(new Point(p1.x + (worldPoint.x - position.x), p1.y + (worldPoint.y - position.y)));
         
@@ -93,5 +105,15 @@ public class Wire implements GraphicObject{
         
         
         position = worldPoint;
+    }
+
+    @Override
+    public ArrayList<Socket> getSockets() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

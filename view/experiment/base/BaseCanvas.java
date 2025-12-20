@@ -14,9 +14,6 @@ public abstract class BaseCanvas extends JPanel{
     public CanvasController canvasCtr;
     public BaseCanvas(ExperimentController expCtr) {
         canvasCtr = new CanvasController(expCtr, this, createObjects());
-        
-        canvasCtr.addWire();
-
         setBackground(Color.WHITE);
         setFocusable(true); 
 
@@ -24,6 +21,7 @@ public abstract class BaseCanvas extends JPanel{
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                requestFocusInWindow();
                 canvasCtr.onMousePressed(e);
             }
 
@@ -38,9 +36,24 @@ public abstract class BaseCanvas extends JPanel{
             public void mouseDragged(MouseEvent e) {
                 canvasCtr.onMouseDragged(e);
             }
+
+            @Override
+             public void mouseMoved(MouseEvent e) {
+                canvasCtr.onMouseMoved(e);
+            }
         });
 
         addMouseWheelListener(canvasCtr::onMouseWheel);
+
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    canvasCtr.onDeleteKeyPressed(); 
+                }
+            }
+        });
     }
     @Override
     protected void paintComponent(Graphics g) {

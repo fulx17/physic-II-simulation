@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 import view.graphic.*;
 import view.graphic.component.*;
+import view.graphic.tool.Battery;
+import view.graphic.tool.ResistanceJacks;
 import view.experiment.base.BaseCanvas;
 
 public class CanvasController {
@@ -26,25 +28,42 @@ public class CanvasController {
     private ExperimentController expCtr;
     private final BaseCanvas canvas;
 
+    private String hoverText;
+    private Point mousePosition;
+
     public CanvasController(ExperimentController expCtr, BaseCanvas canvas, ArrayList<GraphicObject> objects) {
         this.expCtr = expCtr;
         this.canvas = canvas;
         this.objects = objects;
         this.sockets = new ArrayList<>();
         this.wires = new ArrayList<>();
+
+        for(GraphicObject obj : objects) {
+            sockets.addAll(obj.getSockets());
+        }
     }
     public void enableDeleteWire() {
         deleting = true;
     }
 
     public void addWire() {
-        Wire w = new Wire(new Point(300, 300));
+
+        int screenHeight = canvas.getHeight(); 
+        int screenX = 150; 
+        int screenY = screenHeight - 150; 
+        Point screenPoint = new Point(screenX, screenY);
+
+        Point worldPoint = screenToWorld(screenPoint); 
+        Wire w = new Wire(worldPoint);
         wires.add(w);
+        
+        canvas.repaint();
     }
 
 
     public void onMousePressed(MouseEvent e) {
         Point screen = e.getPoint();
+        // System.out.print(screen);
         Point world = screenToWorld(screen);
         lastMouse = screen;
         
@@ -57,6 +76,7 @@ public class CanvasController {
                 if (deleting) {
                     removeWire(w);
                     deleting = false;
+                    expCtr.unSetDelete();
                     canvas.repaint();
                     return;
                 }
@@ -74,7 +94,15 @@ public class CanvasController {
         for (int i = objects.size() - 1; i >= 0; i--) {
             GraphicObject obj = objects.get(i);
             if (obj.contains(world)) {
-                holdingObject = obj;
+
+                if(obj instanceof Battery bat) {
+                    holdingObject = bat.pick(world);
+                }
+
+                else {
+                    holdingObject = obj;
+                }
+
                 panning = false;
                 deleting = false;
                 return;
@@ -83,13 +111,14 @@ public class CanvasController {
 
         holdingObject = null;
         panning = true;
+        expCtr.unSetDelete();
         deleting = false;
     }
 
     public void onMouseDragged(MouseEvent e) {
         Point screen = e.getPoint();
+        hoverText = null;
 
-        // 
         if (holdingObject != null) {
             Point prevWorld = screenToWorld(lastMouse);
             Point currWorld = screenToWorld(screen);
@@ -117,34 +146,76 @@ public class CanvasController {
         }
     }
 
-    public void onMouseReleased(MouseEvent e) {
-
-        System.out.print(holdingObject instanceof Jack);
+    public void onMouseMoved(MouseEvent e) {
         Point screen = e.getPoint();
         Point world = screenToWorld(screen);
-        // neu la jack
-        if (holdingObject instanceof Jack jack) {
-            boolean plugged = false;
+        mousePosition = world;
+        for (int i = objects.size() - 1; i >= 0; i--) {
+            GraphicObject obj = objects.get(i);
+            if (obj.contains(world)) {
+                hoverText = obj.getName();
+                canvas.repaint();
+                return;
+            }
+        }
+        hoverText = null;
+        canvas.repaint();
+    }
 
-            // kiem tra tung socket
-            for (Socket s : sockets) {
 
-                //// co the sua thanh vi tri chuot
-                if (s.contains(jack.getPosition()) || s.contains(world)) {
-                    connect(jack, s);
-                    plugged = true;
-                    break;
-                }
+
+    private Socket findSocket(Jack jack, Point world) {
+        for(Socket s : sockets) {
+            if (s.contains(jack.getPosition()) || 
+                s.contains(world) || 
+                s.contains(jack.getLeg().getPosition())) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    public void onMouseReleased(MouseEvent e) {
+
+        Point screen = e.getPoint();
+        Point world = screenToWorld(screen);
+        // neu la dien tro cam
+        if(holdingObject instanceof ResistanceJacks rp) {
+            Jack jack1 = rp.getJack1();
+            Jack jack2 = rp.getJack2();
+            Socket s1 = findSocket(jack1, world);
+            Socket s2 = findSocket(jack2, world);
+
+            if(s1 != null && s2 != null) {
+                jack1.setPosition(s1.getPosition());
+                connect(jack1, s1);
+                jack2.setPosition(s2.getPosition());
+                connect(jack2, s2);
             }
 
+            else if(rp.getJack1() instanceof JackPlug) {
+                deConnect(rp.getJack1());
+                deConnect(rp.getJack2());
+            }
+            canvas.repaint();
+        }
+
+        // neu la jack
+        if (holdingObject instanceof Jack jack) {
+            // kiem tra tung socket
+            Socket s = findSocket(jack, world);
+            if(s != null) {
+                jack.setPosition(s.getPosition());
+                connect(jack, s);
+            }
             // ngat ket noi neu truoc do no ket noi
-            if (!plugged && jack instanceof JackPlug) {
+            else if(jack instanceof JackPlug) {
                 deConnect(jack);
             }
             canvas.repaint();
         }
 
-        holdingObject = null;
+        // holdingObject = null;
         panning = false;
         deleting = false;
     }
@@ -164,7 +235,40 @@ public class CanvasController {
         canvas.repaint();
     }
 
+    public void onDeleteKeyPressed() {
+        if(holdingObject instanceof Jack j) {
+            removeWire(j.getWire());
+        }
+        if(holdingObject != null && holdingObject.getClass() == Wire.class) {
+            Wire w = (Wire) holdingObject;
+            removeWire(w);
+        }
+        canvas.repaint();
+    }
+
     // ================== RENDER ==================
+
+    private void drawTooltip(Graphics2D g) {
+        // Cấu hình style
+        g.setFont(new Font("Arial", Font.PLAIN, 12));
+        FontMetrics fm = g.getFontMetrics();
+        
+        int textWidth = fm.stringWidth(hoverText);
+        int textHeight = fm.getHeight();
+        
+        int x = mousePosition.x + 12;
+        int y = mousePosition.y + 20;
+
+        g.setColor(new Color(255, 255, 225));
+        g.fillRect(x, y - textHeight, textWidth + 8, textHeight + 4);
+        
+        // Vẽ viền hộp
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y - textHeight, textWidth + 8, textHeight + 4);
+
+        // Vẽ chữ
+        g.drawString(hoverText, x + 4, y);
+    }
 
     public void render(Graphics2D g2) {
         Graphics2D g = (Graphics2D) g2.create();
@@ -188,12 +292,18 @@ public class CanvasController {
             w.draw(g);
         }
 
+        if (hoverText != null && mousePosition != null) {
+            drawTooltip(g);
+        }
+
         g.dispose();
     }
 
     // ================== UTILS ==================
 
     private void removeWire(Wire w) {
+        deConnect(w.getJack1());
+        deConnect(w.getJack2());
         wires.remove(w);
     }
 
@@ -234,6 +344,9 @@ public class CanvasController {
             JackPlug jackplug2 = (JackPlug)w.getJack2();
             int idx1 = sockets.indexOf(jackplug1.getSocket());
             int idx2 = sockets.indexOf(jackplug2.getSocket());
+
+            
+
             expCtr.setCurrentAdjacent(idx1, idx2);
         }
     }
@@ -254,17 +367,19 @@ public class CanvasController {
         }
         
         // add logic to new plug
-        if(j == jack1) {
-            Jack jn = new Jack(w, jack1.getPosition());
-            JackPlug tmp = (JackPlug)jack1;
-            tmp.getSocket().delJack(tmp);
-            w.setJack1(jn);
-        }
-        else {
-            Jack jn = new Jack(w, jack2.getPosition());
-            JackPlug tmp = (JackPlug)jack2;
-            tmp.getSocket().delJack(tmp);
-            w.setJack2(jn);
+        if(j instanceof JackPlug) {
+            if(j == jack1) {
+                Jack jn = new Jack(w, jack1.getPosition());
+                JackPlug tmp = (JackPlug)jack1;
+                tmp.getSocket().delJack(tmp);
+                w.setJack1(jn);
+            }
+            else if (j instanceof JackPlug){
+                Jack jn = new Jack(w, jack2.getPosition());
+                JackPlug tmp = (JackPlug)jack2;
+                tmp.getSocket().delJack(tmp);
+                w.setJack2(jn);
+            }
         }
 
     }

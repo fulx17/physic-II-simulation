@@ -11,11 +11,16 @@ public class Socket implements GraphicObject{
     private ArrayList<JackPlug> jackList;
     private int radius = 15;
     private int innerRadius = 10;
+    private ArrayList<Socket> sockets;
+    private String name;
 
-    public Socket(Point position, Color color) {
+    public Socket(Point position, Color color, String name) {
         this.position = position;
         this.color = color;
         jackList = new ArrayList<>();
+        sockets = new ArrayList<>();
+        this.name = name;
+        sockets.add(this);
     } 
     @Override
     public void draw(Graphics2D g) {
@@ -49,6 +54,16 @@ public class Socket implements GraphicObject{
         return position;
     }
 
+    @Override
+    public ArrayList<Socket> getSockets() {
+        return sockets;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
     // add jack to list
     public void addJack(JackPlug j) {
         jackList.add(j);
@@ -60,9 +75,13 @@ public class Socket implements GraphicObject{
 
     // factory
     public static Socket getCathode(Point position) {
-        return new Socket(position, Color.BLACK);
+        return new Socket(position, Color.BLACK, "Cực âm");
     }
     public static Socket getAnode(Point position) {
-        return new Socket(position, Color.RED);
+        return new Socket(position, Color.RED, "Cực dương");
+    }
+    
+    public static Socket getSource(Point position) {
+        return new Socket(position, Color.YELLOW, "Nguồn");
     }
 }

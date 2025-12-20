@@ -1,10 +1,11 @@
 package view.graphic.component;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public class JackPlug extends Jack {
     private Socket socket;
-    private int radius = 20;
+    private int radius = 13;
 
     public JackPlug(Wire wire, Point position, Socket socket) {
         super(wire, position);
@@ -27,6 +28,11 @@ public class JackPlug extends Jack {
     @Override
     public boolean contains(Point worldPoint) {
         return position.distance(worldPoint) <= radius;
+    }
+
+    @Override
+    public ArrayList<Socket> getSockets() {
+        return new ArrayList<>();
     }
 
     public Socket getSocket() {

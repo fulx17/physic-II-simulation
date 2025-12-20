@@ -1,50 +1,42 @@
 package view.graphic.component;
+import java.util.ArrayList;
 
 import view.graphic.GraphicObject;
 import java.awt.*;
-import java.util.ArrayList;
+public class Switch implements GraphicObject{
 
-public class Jack implements GraphicObject{
-    protected Wire wire;
-    protected Point position;
-    protected Color color;
-
-    private JackLeg leg;
-
-    private final int width = 20;
-    private final int height = 30; 
-    private String name = "Chân cắm";
-
-    public Jack(Wire wire, Point position) {
-        this.wire = wire;
+    private Point position;
+    private String name = "Công tắc";
+    private int width = 30;
+    private int height = 15;
+    private Color color = Color.RED;
+    public Switch(Point position) {
         this.position = position;
-        leg = new JackLeg(new Point(position.x, position.y + 3 * height / 4 ), width / 2, height / 2);
-        color = wire.getColor();
     }
 
     @Override
     public void draw(Graphics2D g) {
+        g.setColor(Color.BLACK);
         int topLeftX = position.x - (width / 2);
         int topLeftY = position.y - (height / 2);
 
-        leg.draw(g);
         g.setColor(color);
         g.fillRect(topLeftX, topLeftY, width, height);
-    }
 
+    }
+    
     @Override
     public boolean contains(Point worldPoint) {
         int left = position.x - width / 2;
         int right = position.x + width / 2;
         int top = position.y - height / 2;
         int bottom = position.y + height / 2;
-        return (worldPoint.x >= left && worldPoint.x <= right) && (worldPoint.y >= top  && worldPoint.y <= bottom) || leg.contains(worldPoint);
+        return (worldPoint.x >= left && worldPoint.x <= right) && (worldPoint.y >= top  && worldPoint.y <= bottom);
     }
-    
+   
     @Override
     public void setPosition(Point worldPoint) {
         position = worldPoint;
-        leg.setPosition(new Point(position.x, position.y + 3 * height / 4));
     }
     
     @Override
@@ -56,19 +48,9 @@ public class Jack implements GraphicObject{
     public ArrayList<Socket> getSockets() {
         return new ArrayList<>();
     }
+    
     @Override
     public String getName() {
         return name;
-    }
-
-    public boolean isPlugged() {
-        return false;
-    }
-    
-    public Wire getWire() {
-        return wire;
-    }
-    public JackLeg getLeg() {
-        return leg;
     }
 }

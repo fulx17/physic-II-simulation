@@ -9,7 +9,7 @@ import controller.ExperimentController;
 public abstract class BaseExperimentPanel extends JPanel{
     
     protected ExperimentController expCtr;
-    public ExperimentFooter footer;
+    protected ExperimentFooter footer;
     public BaseExperimentPanel(AppController controller, BaseExperimentModel model, int id) {
         expCtr = new ExperimentController(controller, this, model);
         setLayout(new BorderLayout());
@@ -28,6 +28,9 @@ public abstract class BaseExperimentPanel extends JPanel{
         add(header, BorderLayout.NORTH);
         add(canvas, BorderLayout.CENTER);
         add(footer, BorderLayout.SOUTH);
+    }
+    public ExperimentFooter getFooter() {
+        return footer;
     }
     protected abstract BaseCanvas createCanvas();
 }
