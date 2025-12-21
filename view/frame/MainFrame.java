@@ -9,6 +9,7 @@ public class MainFrame extends JFrame{
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setIconImage(Toolkit.getDefaultToolkit().getImage("assets/logo.png"));
         setLayout(new BorderLayout());
     }
 
