@@ -30,7 +30,7 @@ public class Problem1Board implements GraphicObject{
     public Problem1Board(Point position) {
         this.position = position;
         
-        G = new MeterBottom(new Point(position.x - 260, position.y - 157), "G", "Điện kế", false);
+        G = new MeterBottom(new Point(position.x - 260, position.y - 157), "G", "Điện kế", true);
         mA = new MeterBottom(new Point(position.x + 60, position.y - 157), "mA", "Miliampe kế", false);
         ds = new DefinedSource(new Point(position.x - 165, position.y + 55));
         fs = new FlowSource(new Point(position.x + 270, position.y + 55));

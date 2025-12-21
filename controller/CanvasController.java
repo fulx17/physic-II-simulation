@@ -31,6 +31,9 @@ public class CanvasController {
     private String hoverText;
     private Point mousePosition;
 
+    private Point hintFrom, hintTo;
+    private Color hintColor; 
+
     public CanvasController(ExperimentController expCtr, BaseCanvas canvas, ArrayList<GraphicObject> objects) {
         this.expCtr = expCtr;
         this.canvas = canvas;
@@ -64,6 +67,9 @@ public class CanvasController {
     public void onMousePressed(MouseEvent e) {
         Point screen = e.getPoint();
         // System.out.print(screen);
+        hintColor = null;
+        hintFrom = null;
+        hintTo = null;
         Point world = screenToWorld(screen);
         lastMouse = screen;
         
@@ -76,7 +82,6 @@ public class CanvasController {
                 if (deleting) {
                     removeWire(w);
                     deleting = false;
-                    expCtr.unSetDelete();
                     canvas.repaint();
                     return;
                 }
@@ -111,15 +116,35 @@ public class CanvasController {
 
         holdingObject = null;
         panning = true;
-        expCtr.unSetDelete();
         deleting = false;
     }
 
     public void onMouseDragged(MouseEvent e) {
         Point screen = e.getPoint();
+        Point world = screenToWorld(screen);
         hoverText = null;
 
         if (holdingObject != null) {
+
+            if(holdingObject instanceof ResistanceJacks rp) {
+                if(rp.getJack1() instanceof JackPlug) {
+                    deConnect(rp.getJack1());
+                    deConnect(rp.getJack2());
+                }
+                canvas.repaint();
+            }
+
+            // neu la jack
+            else if (holdingObject instanceof Jack jack) {
+                // kiem tra tung socket
+                if(jack instanceof JackPlug) {
+                    Wire temp = jack.getWire();
+                    deConnect(jack);
+                    holdingObject = temp.pick(world);
+                }
+                canvas.repaint();
+            }
+
             Point prevWorld = screenToWorld(lastMouse);
             Point currWorld = screenToWorld(screen);
 
@@ -166,11 +191,9 @@ public class CanvasController {
 
     private Socket findSocket(Jack jack, Point world) {
         for(Socket s : sockets) {
-            if (s.contains(jack.getPosition()) || 
-                s.contains(world) || 
-                s.contains(jack.getLeg().getPosition())) {
-                return s;
-            }
+            if (s.contains(jack.getPosition()) ||  
+                s.contains(jack.getLeg().getPosition()))return s;
+            if(world != null && s.contains(world)) return s;
         }
         return null;
     }
@@ -183,8 +206,8 @@ public class CanvasController {
         if(holdingObject instanceof ResistanceJacks rp) {
             Jack jack1 = rp.getJack1();
             Jack jack2 = rp.getJack2();
-            Socket s1 = findSocket(jack1, world);
-            Socket s2 = findSocket(jack2, world);
+            Socket s1 = findSocket(jack1, null);
+            Socket s2 = findSocket(jack2, null);
 
             if(s1 != null && s2 != null) {
                 jack1.setPosition(s1.getPosition());
@@ -201,7 +224,7 @@ public class CanvasController {
         }
 
         // neu la jack
-        if (holdingObject instanceof Jack jack) {
+        else if (holdingObject instanceof Jack jack) {
             // kiem tra tung socket
             Socket s = findSocket(jack, world);
             if(s != null) {
@@ -269,6 +292,18 @@ public class CanvasController {
         // Vẽ chữ
         g.drawString(hoverText, x + 4, y);
     }
+    
+    private void drawHint(Graphics2D g) {
+        Stroke oldStroke = g.getStroke();
+        Color oldColor = g.getColor();
+
+        g.setColor(hintColor);
+
+        g.setStroke(new BasicStroke(20, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
+        g.drawLine(hintFrom.x, hintFrom.y, hintTo.x, hintTo.y);
+        g.setStroke(oldStroke);
+        g.setColor(oldColor);
+    } 
 
     public void render(Graphics2D g2) {
         Graphics2D g = (Graphics2D) g2.create();
@@ -290,6 +325,10 @@ public class CanvasController {
         // draw wires on top
         for (Wire w : wires) {
             w.draw(g);
+        }
+
+        if(hintFrom != null) {
+            drawHint(g);
         }
 
         if (hoverText != null && mousePosition != null) {
@@ -345,7 +384,7 @@ public class CanvasController {
             int idx1 = sockets.indexOf(jackplug1.getSocket());
             int idx2 = sockets.indexOf(jackplug2.getSocket());
 
-            
+            // System.out.println(idx1 + " " + idx2);
 
             expCtr.setCurrentAdjacent(idx1, idx2);
         }
@@ -381,6 +420,14 @@ public class CanvasController {
                 w.setJack2(jn);
             }
         }
+    }
 
+    public void hintDisplay(int idx1, int idx2, boolean isIncorrect) {
+        hintFrom = sockets.get(idx1).getPosition();
+        hintTo = sockets.get(idx2).getPosition();
+        if(isIncorrect) {
+            hintColor = Color.RED;
+        }
+        else hintColor = Color.GREEN;
     }
 }

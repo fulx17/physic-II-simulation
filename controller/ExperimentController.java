@@ -36,15 +36,17 @@ public class ExperimentController {
     // checking
     public void setCurrentAdjacent(int x, int y) {
         currentAdjacent.get(x).set(y, 1);
+        currentAdjacent.get(y).set(x, 1);
     }
 
     public void unSetCurrentAdjacent(int x, int y) {
         currentAdjacent.get(x).set(y, 0);
+        currentAdjacent.get(y).set(x, 0);
     }
 
     public boolean compare() {
         for(int i = 0; i < model.getSockerNumber(); i++) {
-            for(int j = 0; j < model.getSockerNumber(); i++) {
+            for(int j = 0; j < model.getSockerNumber(); j++) {
                 if(currentAdjacent.get(i).get(j) != baseAdjacent[i][j]) {
                     return false;
                 }
@@ -64,56 +66,78 @@ public class ExperimentController {
     // validate 
 
     // hint
-    public List<Point> findIssue() {
-        return List.of(new Point(0, 0), new Point(0, 0));
+    public Point findIssue() {
+        for(int i = 0; i < model.getSockerNumber(); i++) {
+            for(int j = 0; j < model.getSockerNumber(); j++) {
+                if(currentAdjacent.get(i).get(j) != baseAdjacent[i][j] && baseAdjacent[i][j] == 0) {
+                    return new Point(i, j);
+                }
+            }
+        }
+        return null;
     }
-    public List<Point> findHint() {
-        return List.of(new Point(0, 0), new Point(0, 0));
+    public Point findHint() {
+        for(int i = 0; i < model.getSockerNumber(); i++) {
+            for(int j = 0; j < model.getSockerNumber(); j++) {
+                if(currentAdjacent.get(i).get(j) != baseAdjacent[i][j] && baseAdjacent[i][j] == 1) {
+                    return new Point(i, j);
+                }
+            }
+        }
+        return null;
     }
     
     public void displayHint(List<Point> hintWire, boolean isCorrect) {
 
     }
     public void hint() {
+        System.out.println(currentAdjacent);
         if(compare() == true) {
             controller.sendNotify("Bạn mắc chuẩn rồi!!!");
             return;
         } 
-        List<Point> inCorrect = findIssue();
-        List<Point> correct = findHint();
-        displayHint(inCorrect, false);
-        displayHint(correct, true);
+        Point inCorrect = findIssue();
+        Point correct = findHint();
+
+        if(inCorrect != null) {
+            expPanel.getCanvasController().hintDisplay(inCorrect.x, inCorrect.y, true);
+            return;
+        }
+        if(correct != null) {
+            expPanel.getCanvasController().hintDisplay(correct.x, correct.y, false);
+            return;
+        }
     }
 
-    public void unSetDelete() {
-        expPanel.getFooter().getDelWireBtn().setBackground(null);
-    }
 
     public void addVersionChecker() {
-        if(model.getVersionNumber() == 1) {
-            JButton checkBtnVer1 = new JButton("Kiểm tra");
-            checkBtnVer1.addActionListener(e -> {
-                baseAdjacent = model.getBaseAdjacentVer1();
-                checking();
-            });  
-            expPanel.getFooter().add(checkBtnVer1, BorderLayout.CENTER);
-        }
-        else {
-            JPanel buttonPanel = new JPanel();
-            buttonPanel.setLayout(new GridLayout(1, 2, 0, 0));
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(1, model.getVersionNumber(), 0, 0));
+        if(model.getVersionNumber() >= 1) {
             JButton checkBtnVer1 = new JButton("Kiểm tra 1");
             checkBtnVer1.addActionListener(e -> {
                 baseAdjacent = model.getBaseAdjacentVer1();
                 checking();
             });  
+            buttonPanel.add(checkBtnVer1);
+        }
+        if(model.getVersionNumber() >= 2) {
             JButton checkBtnVer2 = new JButton("Kiểm tra 2");
-            checkBtnVer1.addActionListener(e -> {
+            checkBtnVer2.addActionListener(e -> {
                 baseAdjacent = model.getBaseAdjacentVer2();
                 checking();
-            }); 
-            buttonPanel.add(checkBtnVer1);
+            });  
             buttonPanel.add(checkBtnVer2);
-            expPanel.getFooter().add(buttonPanel, BorderLayout.CENTER);
         }
+        if(model.getVersionNumber() >= 3) {
+            JButton checkBtnVer3 = new JButton("Kiểm tra 3");
+            checkBtnVer3.addActionListener(e -> {
+                baseAdjacent = model.getBaseAdjacentVer3();
+                checking();
+            });  
+            buttonPanel.add(checkBtnVer3);
+        }
+        expPanel.getFooter().add(buttonPanel, BorderLayout.CENTER);
     }
+
 }

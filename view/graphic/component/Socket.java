@@ -84,4 +84,8 @@ public class Socket implements GraphicObject{
     public static Socket getSource(Point position) {
         return new Socket(position, Color.YELLOW, "Nguồn");
     }
+
+    public static Socket getBlue(Point position) {
+        return new Socket(position, Color.BLUE, "Nguồn");
+    }
 }
