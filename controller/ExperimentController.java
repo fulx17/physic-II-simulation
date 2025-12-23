@@ -91,7 +91,6 @@ public class ExperimentController {
 
     }
     public void hint() {
-        System.out.println(currentAdjacent);
         if(compare() == true) {
             controller.sendNotify("Bạn mắc chuẩn rồi!!!");
             return;
