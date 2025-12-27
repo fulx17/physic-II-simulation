@@ -429,5 +429,6 @@ public class CanvasController {
             hintColor = Color.RED;
         }
         else hintColor = Color.GREEN;
+        canvas.repaint();
     }
 }

@@ -86,10 +86,6 @@ public class ExperimentController {
         }
         return null;
     }
-    
-    public void displayHint(List<Point> hintWire, boolean isCorrect) {
-
-    }
     public void hint() {
         if(compare() == true) {
             controller.sendNotify("Bạn mắc chuẩn rồi!!!");
